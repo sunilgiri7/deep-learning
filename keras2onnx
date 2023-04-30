@@ -1,0 +1,54 @@
+import onnx
+import keras2onnx
+import tensorflow as tf 
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+model = tf.keras.models.load_model('flowers.h5')
+
+# Convert it into onnx
+onnx_model = keras2onnx.convert_keras(model, model.name)
+
+onnx.save_model(onnx_model, 'flower_model.onnx')
+
+# Define class names and sort them alphabatically as this is how tf.keras remembers them 
+label_names = ['daisy','dandelion','roses','sunflowers','tulips']
+
+net = cv2.dnn.readNetFromONNX('flower_model.onnx')
+
+original_img = cv2.imread('daisy.jpg')
+
+img = original_img.copy()
+
+img = cv2.resize(original_img, (224,224))\
+
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+# Normalize
+img = np.array([img]).astype('float64') / 255.0
+
+# input image to network
+net.setInput(img)
+
+#perform forward pass
+out = net.forward()
+
+#get predicted index
+index = np.argmax(out[0])
+
+#get probability 
+prob = np.max(out[0])
+
+# Get the class name by putting index number
+label = label_names[index]
+
+text = "Predicted: {} {:.2f}%".format(label, prob)
+
+# Write predicted flower on image
+cv2.putText(original_img, text, (5, 4*26),  cv2.FONT_HERSHEY_COMPLEX, 4, (100, 20, 255), 6)
+ 
+# Display image
+plt.figure(figsize=(10,10))
+plt.imshow(original_img[:,:,::-1]);
+plt.axis("off");
