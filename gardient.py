@@ -32,3 +32,5 @@ for epochs in range(400):
     yhat = w*X+b
     loss = np.divide(np.sum((y-yhat)**2,axis=0), X.shape[0])
     print(f"epochs:{epochs} loss:{loss} w:{w} b{b}")
+print(X)
+print(y)
